@@ -1,0 +1,12 @@
+{
+  "name": "handy-tools-static-site",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:production": "node scripts/build.mjs --production",
+    "verify": "node scripts/verify-build.mjs",
+    "dev": "node scripts/serve.mjs"
+  }
+}
