@@ -13,23 +13,23 @@ npm run dev
 
 Open `http://127.0.0.1:4173`. Local output uses `noindex` and a localhost canonical URL so a preview is not accidentally indexed.
 
-## Publish to GitHub Pages
+## Deploy from GitHub with Netlify
 
-This repository deploys automatically to [https://ymrsd.github.io/-Handy-Tools-Pro/](https://ymrsd.github.io/-Handy-Tools-Pro/) when changes are pushed to `main`. In the GitHub repository, open **Settings → Pages** and set the build and deployment source to **GitHub Actions**. The workflow builds the site, verifies its 1,028 sitemap entries and project-page paths, then deploys `dist/`.
+In Netlify, choose **Add new project → Import an existing project → GitHub**, authorize access to `ymrsd/-Handy-Tools-Pro`, and deploy. Netlify reads `netlify.toml`, builds the production site, and publishes `dist/`. Its `URL` environment variable supplies the public production URL used in canonical tags, `robots.txt`, and the sitemap. Pushes to `main` then trigger automatic deploys.
 
-The production sitemap is published at [https://ymrsd.github.io/-Handy-Tools-Pro/sitemap.xml](https://ymrsd.github.io/-Handy-Tools-Pro/sitemap.xml), and `robots.txt` allows indexing and points crawlers to it.
+After the first deploy, find the public site URL in Netlify's **Domain management**. The sitemap is available at `<your-Netlify-site-URL>/sitemap.xml`, and `robots.txt` allows indexing and points crawlers to it. If you add a custom domain, set `SITE_URL` to that domain in the Netlify environment variables and trigger a new deploy.
 
 ## Production SEO build
 
-Set `SITE_URL` to the real public domain before building. Do not publish a build that uses the local preview URL.
+For a manual production build, set `SITE_URL` to the real public domain. Netlify builds use Netlify's `URL` automatically when `SITE_URL` is not set.
 
 ```powershell
-$env:SITE_URL = "https://ymrsd.github.io/-Handy-Tools-Pro"
+$env:SITE_URL = "https://your-site.netlify.app"
 npm run build:production
 npm run verify
 ```
 
-The generated static website is in `dist/`. Set `SITE_URL` to the final public URL (including the repository path on project hosting) when deploying to another host. The build fails if a production build has no HTTPS `SITE_URL`.
+The generated static website is in `dist/`. Set `SITE_URL` to the final HTTPS public URL when deploying to another host. The build fails if a production build has no public HTTPS URL.
 
 Each converter and focused-tool page has a unique title, description, keywords, canonical URL, Open Graph and Twitter metadata, structured data, a working tool link, and related content. Conversion pages are generated from curated unit definitions; they are not 1,000 copies of placeholder tools.
 

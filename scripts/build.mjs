@@ -6,17 +6,18 @@ import { deflateSync } from 'node:zlib';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.join(root, 'dist');
 const production = process.argv.includes('--production') || process.env.NODE_ENV === 'production';
-const configuredUrl = process.env.SITE_URL?.trim();
+const configuredUrl = process.env.SITE_URL?.trim()
+  || (process.env.NETLIFY === 'true' ? process.env.URL?.trim() : undefined);
 const parsedConfiguredUrl = configuredUrl ? new URL(configuredUrl) : null;
 
 if (production && !configuredUrl) {
-  throw new Error('Set SITE_URL to your real public domain before a production build.');
+  throw new Error('Set SITE_URL or provide Netlify\'s URL before a production build.');
 }
 if (production && parsedConfiguredUrl.protocol !== 'https:') {
-  throw new Error('SITE_URL must use HTTPS for a production build.');
+  throw new Error('The production site URL must use HTTPS.');
 }
 if (parsedConfiguredUrl && (parsedConfiguredUrl.search || parsedConfiguredUrl.hash || parsedConfiguredUrl.username || parsedConfiguredUrl.password)) {
-  throw new Error('SITE_URL must not contain a query, fragment, or credentials.');
+  throw new Error('The production site URL must not contain a query, fragment, or credentials.');
 }
 
 const siteUrl = parsedConfiguredUrl

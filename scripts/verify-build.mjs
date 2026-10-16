@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.join(root, 'dist');
+const siteUrl = process.env.SITE_URL?.trim()
+  || (process.env.NETLIFY === 'true' ? process.env.URL?.trim() : undefined);
 const sourceHome = await readFile(path.join(root, 'INDEX.html'), 'utf8');
 const sourceToolCount = (sourceHome.match(/\{id:'[^']+',name:/g) || []).length;
 assert.equal(sourceToolCount, 82, 'Expected the 72 existing tools plus ten new tools.');
@@ -31,8 +33,8 @@ const sitemap = await readFile(path.join(output, 'sitemap.xml'), 'utf8');
 const sitemapEntries = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, url]) => url);
 assert.equal(sitemapEntries.length, 1028, 'Expected the home page, two catalogs, install page, 14 categories, 1,000 converters and ten focused tools in sitemap.');
 assert.equal(new Set(sitemapEntries).size, sitemapEntries.length, 'Sitemap URLs must be unique.');
-if (process.env.SITE_URL) {
-  const expectedRoot = `${process.env.SITE_URL.replace(/\/+$/, '')}/`;
+if (siteUrl) {
+  const expectedRoot = `${siteUrl.replace(/\/+$/, '')}/`;
   assert.equal(sitemapEntries[0], expectedRoot, 'The sitemap homepage must match SITE_URL.');
   assert.ok(sitemapEntries.every(url => url.startsWith(expectedRoot)), 'Every sitemap URL must stay under the configured site path.');
 }
@@ -52,16 +54,16 @@ for (const file of appFiles) {
 }
 assert.equal(appCanonicalUrls.size, 10, 'Focused-tool canonical URLs must be unique.');
 const robots = await readFile(path.join(output, 'robots.txt'), 'utf8');
-if (process.env.SITE_URL) {
+if (siteUrl) {
   assert.match(robots, /Allow: \/\n/, 'Production builds should allow indexing.');
-  assert.ok(robots.includes(`Sitemap: ${process.env.SITE_URL.replace(/\/+$/, '')}/sitemap.xml`), 'robots.txt must reference the production sitemap.');
+  assert.ok(robots.includes(`Sitemap: ${siteUrl.replace(/\/+$/, '')}/sitemap.xml`), 'robots.txt must reference the production sitemap.');
 } else {
   assert.match(robots, /Disallow: \/\n/, 'Local builds should not be indexed.');
 }
 const manifest = JSON.parse(await readFile(path.join(output, 'manifest.webmanifest'), 'utf8'));
 assert.equal(manifest.icons.length, 3, 'Expected install icons for standard and maskable displays.');
-if (process.env.SITE_URL) {
-  const basePath = new URL(process.env.SITE_URL).pathname.replace(/\/+$/, '');
+if (siteUrl) {
+  const basePath = new URL(siteUrl).pathname.replace(/\/+$/, '');
   assert.equal(manifest.start_url, `${basePath}/`, 'The PWA start URL must include the GitHub Pages project path.');
   assert.equal(manifest.scope, `${basePath}/`, 'The PWA scope must include the GitHub Pages project path.');
   const homepage = await readFile(path.join(output, 'index.html'), 'utf8');
